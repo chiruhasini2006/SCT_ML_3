@@ -1,0 +1,32 @@
+The dataset consists of cat and dog images stored in separate folders (train/cat/ and train/dog/).
+Images are read using PIL (Image.open()) instead of OpenCV to avoid errors with corrupted/missing files.
+Each image is resized to 128×128 pixels for uniform input.
+The images are stored in an array X, and labels (0 for cat, 1 for dog) are stored in y.
+📌 Why Resize? Deep learning models expect a fixed input size, so we resize all images to 128×128 pixels to ensure consistency.
+                                                 
+Instead of using raw images, we extract deep features from the VGG16 model, a pre-trained CNN (Convolutional Neural Network) trained on ImageNet.
+The VGG16 model is loaded without fully connected layers (include_top=False).
+It outputs a high-dimensional feature map for each image.
+The feature maps are then flattened into a 1D vector.
+📌 Why Use VGG16 Instead of Raw Images? CNNs extract rich hierarchical features (edges, textures, shapes) that are more informative than raw pixels.
+Reduces computation, as training an SVM on raw images would be inefficient.
+
+The extracted features from VGG16 vary in scale, so we standardize them using StandardScaler.
+Standardization (Z-score normalization) makes the features zero mean and unit variance.
+This ensures better performance of the SVM model.
+📌 Why Standardization? SVMs perform better when features are normalized. It prevents certain features from dominating the classification process.
+
+Once we have the standardized feature vectors, we train an SVM classifier:
+Splitting the dataset: 80% of data is used for training, 20% for testing.
+Linear Kernel SVM (SVC(kernel="linear")) is used because:
+The problem is linearly separable in feature space (thanks to VGG16 features). It is computationally efficient.
+The SVM finds the optimal decision boundary (hyperplane) that separates cat images from dog images.
+📌 Why Use an SVM Instead of a Neural Network? SVMs are effective for small datasets and work well with feature extraction.
+Requires less computational power than training a deep CNN from scratch.
+
+Predictions are made on the test set using svm_model.predict(X_test).
+Performance metrics:
+Accuracy: Measures how many predictions are correct.
+Classification Report: Shows precision, recall, and F1-score.
+Confusion Matrix: A heatmap that visualizes true vs. false classifications.
+📌 Why Use a Confusion Matrix? It helps understand where the model is making errors, such as misclassifying dogs as cats.
